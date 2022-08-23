@@ -20,13 +20,13 @@
 </style>
 
 <nav>
-  <h1>Sidenav</h1>
+  <h1>Side Navi</h1>
   <ul>
     <li>
-      <RouterLink url=''>Homepage</RouterLink>
+      <RouterLink url=''>Main</RouterLink>
     </li>
     <li>
-      <RouterLink url='asas'>WrongPage</RouterLink>
+      <RouterLink url='asas'>Sub</RouterLink>
     </li>
   </ul>
 </nav>

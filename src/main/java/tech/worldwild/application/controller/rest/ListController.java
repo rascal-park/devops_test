@@ -1,5 +1,6 @@
 package tech.worldwild.application.controller.rest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +13,11 @@ public class ListController {
 
     @GetMapping
     public List<Integer> getList() {
-        return List.of(1, 2, 3);
+        List list = new ArrayList();
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        return list;
     }
 
 }
