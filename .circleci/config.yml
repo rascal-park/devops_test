@@ -19,9 +19,9 @@ jobs:
             - run:
                   name: 소스 압축
                   command: |
-                      zip back.zip -r ./* 	#현재 폴더의 하위내용까지 포함하여 back.zip파일 생성
+                      zip back.zip -r ./*
                       mkdir -p deploy	
-                      mv back.zip deploy/back.zip		#back.zip파일 deploy폴더로 이동
+                      mv back.zip deploy/back.zip
 
             - persist_to_workspace:	#build와 deploy 단계가 나뉘어졌기때문에 압축한 파일이 deploy단계에서 사라질 수 있다
                   root: .
