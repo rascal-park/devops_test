@@ -11,12 +11,6 @@ jobs:
         steps:
             - checkout
             - run:
-                  name: gradlew 권한 부여
-                  command: chmod +x ./gradlew
-            - run:
-                  name: gradle 빌드
-                  command: ./gradlew build
-            - run:
                   name: 소스 압축
                   command: |
                       zip back.zip -r ./*
