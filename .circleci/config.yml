@@ -1,26 +1,61 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
+orbs:
+    aws-s3: circleci/aws-s3@1.0.13
+    aws-code-deploy: circleci/aws-code-deploy@0.0.12
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
-    docker:
-      - image: cimg/base:stable
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
-    steps:
-      - checkout
-      - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+    build:
+        docker:
+            - image: circleci/openjdk:11-jdk
+        
+        steps:
+            - checkout
+            - run:
+                  name: gradlew 권한 부여
+                  command: chmod +x ./gradlew
+            - run:
+                  name: gradle 빌드
+                  command: ./gradlew build
+            - run:
+                  name: 소스 압축
+                  command: |
+                      zip back.zip -r ./* 	#현재 폴더의 하위내용까지 포함하여 back.zip파일 생성
+                      mkdir -p deploy	
+                      mv back.zip deploy/back.zip		#back.zip파일 deploy폴더로 이동
 
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+            - persist_to_workspace:	#build와 deploy 단계가 나뉘어졌기때문에 압축한 파일이 deploy단계에서 사라질 수 있다
+                  root: .
+                  paths: deploy		#deploy 폴더는 그대로 유지하겠다
+    
+    deploy:
+        docker:
+            - image: circleci/python:2.7
+        
+        steps:
+            - attach_workspace:	#저장한 폴더 가져오기
+                  at: .
+
+            - aws-s3/copy:
+                  from: deploy/*					#deploy 내부의 모든 파일을 aws s3로 보낸다
+                  to: 's3://jhpark153-deploy'		#s3://생성한 버킷명
+                  aws-region: AWS_DEFAULT_REGION	#CircleCI에 설정한 Context의 내용이 들어갈것이다
+
+            - aws-code-deploy/deploy-bundle:
+                  application-name: jhpark153-deploy			#CodeDeploy 애플리케이션 이름 작성
+                  deployment-group: jhpark153-deploy-group		#EC2CodeDeployTest가 속한 배포그룹명 작성
+                  deployment-config: CodeDeployDefault.AllAtOnce	#EC2CodeDeployTestGroup의 배포그룹세부정보의 배포구성의 값 작성
+                  bundle-bucket: jhpark153-deploy			#s3://생성한 버킷명
+                  bundle-key: back 					#보내는 파일 이름
+                  bundle-type: zip 					#보내는 파일 확장자
+
+
 workflows:
-  say-hello-workflow:
-    jobs:
-      - say-hello
+    version: 2.1
+    
+    build-deploy:
+        jobs:
+            - build
+            - deploy:
+                  context: DEVOPS_TEST #CircleCI에 설정한 Context 이름을 작성한다 (aws 계정정보 들어있는)
+                  requires:
+                      - build
