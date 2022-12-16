@@ -11,7 +11,7 @@ jobs:
         steps:
             - checkout
             - run:
-                  name: [소스 압축]
+                  name: 소스 압축
                   command: |
                       zip back.zip -r ./*
                       mkdir -p deploy	
