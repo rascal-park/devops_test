@@ -52,4 +52,4 @@ workflows:
             - deploy:
                   context: DEVOPS_TEST
                   requires:
-                      - build 
+                      - build
